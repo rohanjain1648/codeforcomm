@@ -1,0 +1,9 @@
+fastapi>=0.115.0
+uvicorn>=0.30.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Optional — only imported when their credentials are configured (gcp.py
+# degrades gracefully without them, same pattern as Gemini in services.py).
+earthengine-api>=1.0.0
+google-cloud-dialogflow>=2.30.0
