@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.vite/
+*.log
+
+# Root-level scratch/pitch files (not part of the app)
+/PLAN.md
+/PITCH_DECK.html
+/PITCH_DECK_VERTICAL.html
+/generate_diagrams.py
+/create_svg_diagrams.py
+/diagrams/
