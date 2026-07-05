@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* Dark-first agricultural dashboard. Data-viz roles from the validated
+   reference palette (dark-surface steps). */
+:root {
+  --surface-0: #121211;
+  --surface-1: #1a1a19;
+  --surface-2: #242422;
+  --border: #33332f;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #8a897f;
+
+  /* categorical (dark mode steps) — fixed order: soil, water, season, economics */
+  --series-1: #3987e5;
+  --series-2: #199e70;
+  --series-3: #c98500;
+  --series-4: #008300;
+
+  /* status — reserved, never reused as series */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  /* sequential blue (rain magnitude) */
+  --seq-200: #9ec5f4;
+  --seq-400: #3987e5;
+  --seq-600: #184f95;
+
+  --accent: #52b788;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: "Segoe UI", "Noto Sans", system-ui, sans-serif;
+}
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+}
+
+.btn {
+  background: var(--accent);
+  color: #08130d;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.55rem 1.2rem;
+  transition: filter 0.15s;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.12); }
+.btn:disabled { opacity: 0.5; cursor: wait; }
+
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+}
+.btn-ghost:hover { color: var(--text-primary); }
+
+.input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.9rem;
+  color: var(--text-primary);
+  width: 100%;
+}
+.input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+select.input option { background: var(--surface-2); }
