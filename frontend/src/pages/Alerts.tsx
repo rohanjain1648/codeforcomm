@@ -1,5 +1,7 @@
 // Alerts — dry-spell detail, 10-day rain outlook, voice playback.
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Volume2 } from "lucide-react";
 import { api } from "../lib/api";
 import { useApp } from "../lib/store";
 import { t } from "../lib/i18n";
@@ -41,10 +43,16 @@ export default function Alerts() {
       </div>
 
       {advisory && (
-        <>
-          <div
+        <motion.div
+          className="flex flex-col gap-4"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+        >
+          <motion.div
             className="card flex items-center justify-between"
             style={{ borderLeft: `4px solid ${STATUS_COLOR[advisory.level]}` }}
+            variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
           >
             <div>
               <div className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
@@ -60,26 +68,26 @@ export default function Alerts() {
               </div>
             </div>
             <button
-              className="btn-ghost"
+              className="btn-ghost inline-flex items-center gap-1.5"
               onClick={() => speakAuto(advisory.alerts.map((a) => a.msg).join(". "), lang, caps.tts)}
             >
-              🔊 {t("speak", lang)}
+              <Volume2 size={15} /> {t("speak", lang)}
             </button>
-          </div>
+          </motion.div>
 
-          <div className="card">
+          <motion.div className="card" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
             <div className="mb-3 text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
               {t("outlook_rain", lang)} (mm/day)
             </div>
             <RainBars daily={advisory.daily} />
-          </div>
+          </motion.div>
 
           <div className="flex flex-col gap-2">
             {advisory.alerts.map((a, i) => (
               <AlertCard key={i} alert={a} />
             ))}
           </div>
-        </>
+        </motion.div>
       )}
     </div>
   );

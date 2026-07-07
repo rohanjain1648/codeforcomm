@@ -2,6 +2,8 @@
 // plus a Dialogflow-backed conversational endpoint (falls back to a
 // keyword classifier when no Dialogflow agent is configured).
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Volume2 } from "lucide-react";
 import { api, type AlertLevel } from "../lib/api";
 import { useApp } from "../lib/store";
 import { t } from "../lib/i18n";
@@ -69,8 +71,8 @@ export default function Sms() {
           <input className="input" placeholder={t("location_ph", lang)} value={loc}
             onChange={(e) => setLoc(e.target.value)} />
           <div className="flex gap-2">
-            <button className="btn" onClick={subscribe}>
-              {subscribed ? "✓ Subscribed" : t("subscribe", lang)}
+            <button className="btn inline-flex items-center gap-1.5" onClick={subscribe}>
+              {subscribed && <Check size={15} />} {subscribed ? "Subscribed" : t("subscribe", lang)}
             </button>
             <button className="btn-ghost" onClick={preview} disabled={loading}>
               {t("sms_preview", lang)}
@@ -89,23 +91,28 @@ export default function Sms() {
                 Try: "which crop should I grow" or "is it going to rain this week"
               </p>
             )}
-            {ivrTurns.map((turn, i) => (
-              <div
-                key={i}
-                className="rounded-xl px-3 py-2 text-sm"
-                style={{
-                  alignSelf: turn.from === "user" ? "flex-end" : "flex-start",
-                  background: turn.from === "user" ? "var(--accent)" : "var(--surface-2)",
-                  color: turn.from === "user" ? "#08130d" : "var(--text-secondary)",
-                  maxWidth: "85%",
-                }}
-              >
-                {turn.text}
-                {turn.intent && (
-                  <div className="mt-1 text-[10px] opacity-70">intent: {turn.intent}</div>
-                )}
-              </div>
-            ))}
+            <AnimatePresence initial={false}>
+              {ivrTurns.map((turn, i) => (
+                <motion.div
+                  key={i}
+                  className="rounded-xl px-3 py-2 text-sm"
+                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    alignSelf: turn.from === "user" ? "flex-end" : "flex-start",
+                    background: turn.from === "user" ? "var(--accent)" : "var(--surface-2)",
+                    color: turn.from === "user" ? "#08130d" : "var(--text-secondary)",
+                    maxWidth: "85%",
+                  }}
+                >
+                  {turn.text}
+                  {turn.intent && (
+                    <div className="mt-1 text-[10px] opacity-70">intent: {turn.intent}</div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
             {ivrBusy && <Spinner label={t("loading", lang)} />}
           </div>
           <div className="flex gap-2">
@@ -138,31 +145,36 @@ export default function Sms() {
             Press "{t("sms_preview", lang)}" to compose today's real alert for {loc}.
           </div>
         )}
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className="rounded-2xl rounded-tl-sm p-3 text-sm"
-            style={{
-              background: "var(--surface-2)",
-              borderLeft: `3px solid ${STATUS_COLOR[m.level]}`,
-              color: "var(--text-secondary)",
-            }}
-          >
-            {m.sms}
-            <div className="mt-2 flex items-center justify-between">
-              <button
-                className="text-xs"
-                style={{ color: "var(--accent)" }}
-                onClick={() => speakAuto(m.sms, lang, caps.tts)}
-              >
-                🔊 {t("speak", lang)}
-              </button>
-              <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                {m.live ? "Translate: live" : "Translate: offline"}
-              </span>
-            </div>
-          </div>
-        ))}
+        <AnimatePresence initial={false}>
+          {messages.map((m, i) => (
+            <motion.div
+              key={i}
+              className="rounded-2xl rounded-tl-sm p-3 text-sm"
+              initial={{ opacity: 0, y: 12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                background: "var(--surface-2)",
+                borderLeft: `3px solid ${STATUS_COLOR[m.level]}`,
+                color: "var(--text-secondary)",
+              }}
+            >
+              {m.sms}
+              <div className="mt-2 flex items-center justify-between">
+                <button
+                  className="inline-flex items-center gap-1 text-xs"
+                  style={{ color: "var(--accent)" }}
+                  onClick={() => speakAuto(m.sms, lang, caps.tts)}
+                >
+                  <Volume2 size={13} /> {t("speak", lang)}
+                </button>
+                <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                  {m.live ? "Translate: live" : "Translate: offline"}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

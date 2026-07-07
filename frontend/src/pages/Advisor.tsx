@@ -1,5 +1,7 @@
 // Crop Advisor — the recommendation engine UI with score breakdowns.
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Volume2, Satellite, Trophy, Sprout } from "lucide-react";
 import { api, type RecommendRes } from "../lib/api";
 import { useApp } from "../lib/store";
 import { t } from "../lib/i18n";
@@ -77,44 +79,69 @@ export default function Advisor() {
       </div>
 
       {res && (
-        <>
-          <div className="card" style={{ borderLeft: "4px solid var(--accent)" }}>
+        <motion.div
+          className="flex flex-col gap-4"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+        >
+          <motion.div
+            className="card"
+            style={{ borderLeft: "4px solid var(--accent)" }}
+            variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
+          >
             <div className="mb-1 flex items-center justify-between">
               <span className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
                 {t("ai_advice", lang)} · {res.district.district} · {res.district.zone}
                 {res.ai_live ? " · Gemini" : " · offline mode"}
               </span>
-              <button className="btn-ghost" onClick={() => speakAuto(res.ai_advice, lang, caps.tts)}>
-                🔊 {t("speak", lang)}
+              <button className="btn-ghost inline-flex items-center gap-1.5" onClick={() => speakAuto(res.ai_advice, lang, caps.tts)}>
+                <Volume2 size={15} /> {t("speak", lang)}
               </button>
             </div>
             <p className="whitespace-pre-wrap text-sm" style={{ color: "var(--text-secondary)" }}>
               {res.ai_advice}
             </p>
-          </div>
+          </motion.div>
 
           {res.satellite && (
-            <div className="card flex flex-wrap items-center gap-4 text-sm" style={{ color: "var(--text-secondary)" }}>
-              <span className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                🛰️ Earth Engine {res.satellite_live ? "· live" : "· offline"}
+            <motion.div
+              className="card flex flex-wrap items-center gap-4 text-sm"
+              style={{ color: "var(--text-secondary)" }}
+              variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
+            >
+              <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                <Satellite size={13} /> Earth Engine {res.satellite_live ? "· live" : "· offline"}
               </span>
               {res.satellite.ndvi !== null && <span>NDVI: {res.satellite.ndvi}</span>}
               {res.satellite.soil_moisture_mm !== null && (
                 <span>Soil moisture: {res.satellite.soil_moisture_mm} mm</span>
               )}
-            </div>
+            </motion.div>
           )}
 
-          <ScoreLegend />
+          <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
+            <ScoreLegend />
+          </motion.div>
 
           <div className="flex flex-col gap-2">
             {res.recommendations.map((r, idx) => (
-              <div key={r.key} className="card">
+              <motion.div
+                key={r.key}
+                className="card"
+                variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
+                whileHover={{ y: -2 }}
+                style={idx === 0 ? { borderLeft: "4px solid var(--accent)" } : undefined}
+              >
                 <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-semibold">
-                    {idx === 0 && "🏆 "}
-                    {r.icon} {r.label}
-                    <span className="ml-2 text-sm" style={{ color: "var(--text-muted)" }}>
+                  <span className="inline-flex items-center gap-1.5 font-semibold">
+                    {idx === 0 ? (
+                      <Trophy size={16} style={{ color: "var(--status-warning)" }} />
+                    ) : (
+                      <Sprout size={16} style={{ color: "var(--accent)" }} />
+                    )}
+                    {r.label}
+                    <span className="ml-1 text-sm" style={{ color: "var(--text-muted)" }}>
                       {r.duration_days}d
                     </span>
                   </span>
@@ -134,10 +161,10 @@ export default function Advisor() {
                     </span>
                   )}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </>
+        </motion.div>
       )}
     </div>
   );

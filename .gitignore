@@ -6,6 +6,12 @@ dist/
 .vite/
 *.log
 
+# Google Cloud service-account keys (Earth Engine, Dialogflow, etc.) —
+# never commit these regardless of where they're placed in the repo.
+*service-account*.json
+*credentials*.json
+backend/secrets/
+
 # Root-level scratch/pitch files (not part of the app)
 /PLAN.md
 /PITCH_DECK.html

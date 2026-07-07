@@ -1,7 +1,16 @@
 // Shared UI: stat tiles, alert cards, score bars, voice input button.
 // Viz styling follows the reference dataviz palette: status colors reserved
 // for alert levels, categorical slots in fixed order, text in text tokens.
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertTriangle,
+  AlertOctagon,
+  CheckCircle2,
+  Loader2,
+  Mic,
+  Square,
+} from "lucide-react";
 import type { Alert, AlertLevel, Breakdown, Capabilities } from "../lib/api";
 import { SPEECH_LOCALE, type Lang } from "../lib/i18n";
 import { transcribeCloudBlob } from "../lib/voice";
@@ -12,40 +21,49 @@ export const STATUS_COLOR: Record<AlertLevel, string> = {
   red: "var(--status-critical)",
 };
 
-export const STATUS_ICON: Record<AlertLevel, string> = {
-  green: "✓",
-  amber: "⚠",
-  red: "‼",
+export const STATUS_ICON: Record<AlertLevel, typeof CheckCircle2> = {
+  green: CheckCircle2,
+  amber: AlertTriangle,
+  red: AlertOctagon,
 };
 
 export function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="card flex flex-col gap-1">
+    <motion.div
+      className="card flex flex-col gap-1"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -2 }}
+    >
       <span className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
         {label}
       </span>
       <span className="text-2xl font-semibold">{value}</span>
       {sub && <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{sub}</span>}
-    </div>
+    </motion.div>
   );
 }
 
 export function AlertCard({ alert }: { alert: Alert }) {
+  const Icon = STATUS_ICON[alert.level];
   return (
-    <div
+    <motion.div
       className="card flex items-start gap-3"
       style={{ borderLeft: `4px solid ${STATUS_COLOR[alert.level]}` }}
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -2 }}
     >
-      <span aria-hidden style={{ color: STATUS_COLOR[alert.level], fontWeight: 700 }}>
-        {STATUS_ICON[alert.level]}
-      </span>
+      <Icon size={18} aria-hidden style={{ color: STATUS_COLOR[alert.level], flexShrink: 0, marginTop: 2 }} />
       <div>
         <div className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
           {alert.type.replace("_", " ")} · {alert.level}
         </div>
         <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>{alert.msg}</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -61,14 +79,13 @@ export function ScoreBar({ breakdown }: { breakdown: Breakdown }) {
   return (
     <div className="flex h-2.5 w-full overflow-hidden rounded" style={{ gap: 2 }}>
       {SEGMENTS.map((s) => (
-        <div
+        <motion.div
           key={s.key}
           title={`${s.label}: ${breakdown[s.key]}`}
-          style={{
-            width: `${breakdown[s.key]}%`,
-            background: s.color,
-            borderRadius: 2,
-          }}
+          initial={{ width: 0 }}
+          animate={{ width: `${breakdown[s.key]}%` }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          style={{ background: s.color, borderRadius: 2 }}
         />
       ))}
     </div>
@@ -93,7 +110,7 @@ export function RainBars({ daily }: { daily: { date: string; rain: number }[] })
   const max = Math.max(...daily.map((d) => d.rain), 1);
   return (
     <div className="flex items-end gap-1.5 h-28">
-      {daily.map((d) => {
+      {daily.map((d, i) => {
         const h = Math.max((d.rain / max) * 100, 3);
         const heavy = d.rain >= max * 0.7 && d.rain > 2;
         return (
@@ -103,11 +120,13 @@ export function RainBars({ daily }: { daily: { date: string; rain: number }[] })
                 {Math.round(d.rain)}
               </span>
             )}
-            <div
+            <motion.div
               title={`${d.date}: ${d.rain.toFixed(1)} mm`}
               className="w-full rounded-t"
+              initial={{ height: 0 }}
+              animate={{ height: `${h}%` }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.03 }}
               style={{
-                height: `${h}%`,
                 background: d.rain > 10 ? "var(--seq-600)" : d.rain > 2 ? "var(--seq-400)" : "var(--seq-200)",
                 minHeight: 3,
               }}
@@ -202,17 +221,32 @@ export function VoiceButton({
 
   if (!supported) return null;
   return (
-    <button
+    <motion.button
       type="button"
       onClick={toggle}
       disabled={busy}
-      className="btn-ghost"
+      className="btn-ghost inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap"
+      whileTap={{ scale: 0.95 }}
+      animate={listening ? { boxShadow: ["0 0 0 0 rgba(208,59,59,0.4)", "0 0 0 8px rgba(208,59,59,0)"] } : {}}
+      transition={listening ? { duration: 1.2, repeat: Infinity, ease: "easeOut" } : {}}
       style={listening ? { borderColor: "var(--status-critical)", color: "var(--status-critical)" } : undefined}
       aria-label="Voice input"
       title={sttReady ? "Cloud Speech-to-Text" : "Browser voice (offline mode)"}
     >
-      {busy ? "…transcribing" : listening ? "◉ Listening…" : sttReady ? "🎤 Speak (Cloud)" : "🎤 Speak"}
-    </button>
+      {busy ? (
+        <>
+          <Loader2 size={15} className="animate-spin" /> transcribing
+        </>
+      ) : listening ? (
+        <>
+          <Square size={13} fill="currentColor" /> Listening…
+        </>
+      ) : (
+        <>
+          <Mic size={15} /> Speak{sttReady ? " (Cloud)" : ""}
+        </>
+      )}
+    </motion.button>
   );
 }
 
@@ -230,20 +264,37 @@ const CAP_LABELS: { key: keyof Capabilities; label: string }[] = [
 export function CapabilityStrip({ caps }: { caps: Capabilities }) {
   return (
     <div className="flex flex-wrap gap-1.5 text-[11px]">
-      {CAP_LABELS.map((c) => (
-        <span
-          key={c.key}
-          className="rounded-full px-2 py-0.5"
-          style={
-            caps[c.key]
-              ? { background: "rgba(12,163,12,0.15)", color: "var(--status-good)" }
-              : { background: "var(--surface-2)", color: "var(--text-muted)" }
-          }
-          title={caps[c.key] ? `${c.label}: live` : `${c.label}: offline fallback (no credentials configured)`}
-        >
-          {caps[c.key] ? "●" : "○"} {c.label}
-        </span>
-      ))}
+      {CAP_LABELS.map((c) => {
+        const live = caps[c.key];
+        return (
+          <span
+            key={c.key}
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5"
+            style={
+              live
+                ? { background: "rgba(12,163,12,0.15)", color: "var(--status-good)" }
+                : { background: "var(--surface-2)", color: "var(--text-muted)" }
+            }
+            title={live ? `${c.label}: live` : `${c.label}: offline fallback (no credentials configured)`}
+          >
+            <span className="relative inline-flex h-1.5 w-1.5">
+              {live && (
+                <motion.span
+                  className="absolute inline-flex h-full w-full rounded-full"
+                  style={{ background: "var(--status-good)" }}
+                  animate={{ scale: [1, 2.2], opacity: [0.6, 0] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+                />
+              )}
+              <span
+                className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                style={{ background: live ? "var(--status-good)" : "var(--text-muted)" }}
+              />
+            </span>
+            {c.label}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -251,8 +302,32 @@ export function CapabilityStrip({ caps }: { caps: Capabilities }) {
 export function Spinner({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-      <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      <Loader2 size={14} className="animate-spin" />
       {label}
     </div>
+  );
+}
+
+// Utility: staggered fade-in list wrapper (used for RSK queue, IVR turns, etc.)
+export function AnimatedList({ children }: { children: ReactNode }) {
+  return <AnimatePresence initial={false}>{children}</AnimatePresence>;
+}
+
+export function AnimatedItem({
+  id, children, className, style,
+}: { id: string | number; children: ReactNode; className?: string; style?: CSSProperties }) {
+  return (
+    <motion.div
+      key={id}
+      layout
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+      style={style}
+    >
+      {children}
+    </motion.div>
   );
 }

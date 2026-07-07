@@ -1,6 +1,8 @@
 // Dashboard — 3D farm driven by live advisory data + headline stats +
 // Google Maps district hotspot overlay.
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Volume2, Map as MapIcon } from "lucide-react";
 import FarmScene from "../three/FarmScene";
 import MapView from "../components/MapView";
 import { api, type DistrictPoint } from "../lib/api";
@@ -68,13 +70,19 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="h-80 overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
+      <motion.div
+        className="h-80 overflow-hidden rounded-2xl"
+        style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
         <FarmScene
           growth={growth}
           rainLevel={rainLevel}
           alertLevel={advisory?.level ?? "green"}
         />
-      </div>
+      </motion.div>
 
       {advisory && (
         <>
@@ -107,17 +115,17 @@ export default function Dashboard() {
           </div>
 
           <button
-            className="btn-ghost self-start"
+            className="btn-ghost inline-flex w-fit items-center gap-1.5"
             onClick={() => speakAuto(advisory.alerts.map((a) => a.msg).join(". "), lang, caps.tts)}
           >
-            🔊 {t("speak", lang)}
+            <Volume2 size={15} /> {t("speak", lang)}
           </button>
         </>
       )}
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-          {t("hotspot_map", lang)} — Google Maps Platform
+        <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+          <MapIcon size={13} /> {t("hotspot_map", lang)} — Google Maps Platform
         </span>
         <MapView
           points={districts}

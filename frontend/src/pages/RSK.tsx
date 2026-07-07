@@ -1,5 +1,7 @@
 // RSK Desk — Rythu Seva Kendra expert queue for escalated crop-health cases.
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Camera, PhoneCall, Check } from "lucide-react";
 import { api, type RskQueueRes } from "../lib/api";
 import { StatTile } from "../components/ui";
 
@@ -53,47 +55,62 @@ export default function Rsk() {
             Queue empty — log a high-severity case in the Crop Health tab to see it appear here.
           </div>
         )}
-        {data?.queue.map((log) => (
-          <div key={log.id} className="card">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-semibold">
-                {log.disease}
-                <span className="ml-2 text-sm" style={{ color: SEV_COLOR[log.severity] }}>
-                  ● {log.severity} · {log.confidence}%
+        <AnimatePresence initial={false}>
+          {data?.queue.map((log) => (
+            <motion.div
+              key={log.id}
+              layout
+              className="card"
+              initial={{ opacity: 0, y: 14, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="inline-flex items-center gap-2 font-semibold">
+                  {log.disease}
+                  <span className="inline-flex items-center gap-1.5 text-sm" style={{ color: SEV_COLOR[log.severity] }}>
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: SEV_COLOR[log.severity] }} />
+                    {log.severity} · {log.confidence}%
+                  </span>
                 </span>
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                #{log.id} · {new Date(log.ts * 1000).toLocaleString("en-IN")}
-              </span>
-            </div>
-            <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
-              {log.farmer || "Farmer"}{log.village && `, ${log.village}`}
-              {log.crop && ` · ${log.crop}`}
-              {log.has_photo && " · 📷 photo attached"}
-            </p>
-            {log.description && (
-              <p className="mt-1 text-sm italic" style={{ color: "var(--text-muted)" }}>
-                “{log.description}”
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  #{log.id} · {new Date(log.ts * 1000).toLocaleString("en-IN")}
+                </span>
+              </div>
+              <p className="mt-1 inline-flex flex-wrap items-center gap-1 text-sm" style={{ color: "var(--text-secondary)" }}>
+                {log.farmer || "Farmer"}{log.village && `, ${log.village}`}
+                {log.crop && ` · ${log.crop}`}
+                {log.has_photo && (
+                  <span className="inline-flex items-center gap-1">
+                    · <Camera size={13} /> photo attached
+                  </span>
+                )}
               </p>
-            )}
-            <div className="mt-3 flex gap-2">
-              {log.status === "pending" ? (
-                <>
-                  <button className="btn-ghost" onClick={() => update(log.id, "resolved")}>
-                    ✓ Mark resolved
-                  </button>
-                  <button className="btn-ghost" onClick={() => update(log.id, "callback")}>
-                    📞 Schedule callback
-                  </button>
-                </>
-              ) : (
-                <span className="text-sm" style={{ color: "var(--status-good)" }}>
-                  status: {log.status}
-                </span>
+              {log.description && (
+                <p className="mt-1 text-sm italic" style={{ color: "var(--text-muted)" }}>
+                  “{log.description}”
+                </p>
               )}
-            </div>
-          </div>
-        ))}
+              <div className="mt-3 flex gap-2">
+                {log.status === "pending" ? (
+                  <>
+                    <button className="btn-ghost inline-flex items-center gap-1.5" onClick={() => update(log.id, "resolved")}>
+                      <Check size={14} /> Mark resolved
+                    </button>
+                    <button className="btn-ghost inline-flex items-center gap-1.5" onClick={() => update(log.id, "callback")}>
+                      <PhoneCall size={14} /> Schedule callback
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-sm" style={{ color: "var(--status-good)" }}>
+                    status: {log.status}
+                  </span>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Wheat, Compass, Bell, Microscope, Landmark, MessageSquareText } from "lucide-react";
 import { useApp } from "./lib/store";
 import { LANGS, t } from "./lib/i18n";
 import { api } from "./lib/api";
@@ -12,15 +14,24 @@ import Sms from "./pages/Sms";
 import Landing from "./pages/Landing";
 
 const TABS = [
-  { id: "dashboard", labelKey: "nav_dashboard", icon: "🌾" },
-  { id: "advisor", labelKey: "nav_advisor", icon: "🧭" },
-  { id: "alerts", labelKey: "nav_alerts", icon: "🔔" },
-  { id: "health", labelKey: "nav_health", icon: "🔬" },
-  { id: "rsk", labelKey: "nav_rsk", icon: "🏛️" },
-  { id: "sms", labelKey: "nav_sms", icon: "📱" },
+  { id: "dashboard", labelKey: "nav_dashboard", icon: Wheat },
+  { id: "advisor", labelKey: "nav_advisor", icon: Compass },
+  { id: "alerts", labelKey: "nav_alerts", icon: Bell },
+  { id: "health", labelKey: "nav_health", icon: Microscope },
+  { id: "rsk", labelKey: "nav_rsk", icon: Landmark },
+  { id: "sms", labelKey: "nav_sms", icon: MessageSquareText },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+const PAGES: Record<TabId, ComponentType> = {
+  dashboard: Dashboard,
+  advisor: Advisor,
+  alerts: Alerts,
+  health: Health,
+  rsk: Rsk,
+  sms: Sms,
+};
 
 export default function App() {
   const [tab, setTab] = useState<TabId>("dashboard");
@@ -41,12 +52,20 @@ export default function App() {
     return <Landing />;
   }
 
+  const ActivePage = PAGES[tab];
+
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16">
-      <header className="flex flex-wrap items-center justify-between gap-3 py-5">
+      <motion.header
+        className="flex flex-wrap items-center justify-between gap-3 py-5"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            🌾 {t("app_title", lang)}
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+            <Wheat size={26} style={{ color: "var(--accent)" }} />
+            {t("app_title", lang)}
           </h1>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             {t("tagline", lang)}
@@ -60,42 +79,69 @@ export default function App() {
             <button
               key={l.code}
               onClick={() => setLang(l.code)}
-              className="rounded-lg px-3 py-1.5 text-sm"
+              className="relative rounded-lg px-3 py-1.5 text-sm transition-colors"
               style={
                 lang === l.code
-                  ? { background: "var(--accent)", color: "#08130d", fontWeight: 600 }
+                  ? { color: "#08130d", fontWeight: 600 }
                   : { color: "var(--text-secondary)" }
               }
             >
-              {l.label}
+              {lang === l.code && (
+                <motion.span
+                  layoutId="lang-active"
+                  className="absolute inset-0 rounded-lg"
+                  style={{ background: "var(--accent-gradient)" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="relative">{l.label}</span>
             </button>
           ))}
         </div>
-      </header>
+      </motion.header>
 
       <nav className="mb-6 flex flex-wrap gap-2">
-        {TABS.map((tb) => (
-          <button
-            key={tb.id}
-            onClick={() => setTab(tb.id)}
-            className="rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-            style={
-              tab === tb.id
-                ? { background: "var(--surface-2)", color: "var(--text-primary)", border: "1px solid var(--accent)" }
-                : { background: "var(--surface-1)", color: "var(--text-secondary)", border: "1px solid var(--border)" }
-            }
-          >
-            {tb.icon} {t(tb.labelKey, lang)}
-          </button>
-        ))}
+        {TABS.map((tb) => {
+          const Icon = tb.icon;
+          const active = tab === tb.id;
+          return (
+            <button
+              key={tb.id}
+              onClick={() => setTab(tb.id)}
+              className="relative flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"
+              style={{
+                color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
+              }}
+            >
+              {active && (
+                <motion.span
+                  layoutId="nav-active"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: "var(--surface-2)" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="relative flex items-center gap-2">
+                <Icon size={16} />
+                {t(tb.labelKey, lang)}
+              </span>
+            </button>
+          );
+        })}
       </nav>
 
-      {tab === "dashboard" && <Dashboard />}
-      {tab === "advisor" && <Advisor />}
-      {tab === "alerts" && <Alerts />}
-      {tab === "health" && <Health />}
-      {tab === "rsk" && <Rsk />}
-      {tab === "sms" && <Sms />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <ActivePage />
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 // Crop Health — photo/voice logging → Gemini diagnosis → RSK escalation.
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Microscope, Landmark, CheckCircle2, Volume2, ImageUp } from "lucide-react";
 import { api, type HealthLog } from "../lib/api";
 import { useApp } from "../lib/store";
 import { t } from "../lib/i18n";
@@ -75,8 +77,8 @@ export default function Health() {
         </div>
 
         <div className="card flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-            {t("upload_photo", lang)}
+          <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+            <ImageUp size={13} /> {t("upload_photo", lang)}
           </span>
           <input
             type="file" accept="image/*" capture="environment"
@@ -84,53 +86,78 @@ export default function Health() {
             className="text-sm" style={{ color: "var(--text-secondary)" }}
           />
           {preview && (
-            <img src={preview} alt="crop" className="max-h-48 rounded-lg object-cover" />
+            <motion.img
+              src={preview} alt="crop" className="max-h-48 rounded-lg object-cover"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            />
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="btn" onClick={submit} disabled={loading}>
-            🔬 {t("diagnose", lang)}
+          <button className="btn inline-flex items-center gap-2" onClick={submit} disabled={loading}>
+            <Microscope size={16} /> {t("diagnose", lang)}
           </button>
           {loading && <Spinner label={t("loading", lang)} />}
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
-        {result && (
-          <>
-            <div
-              className="card"
-              style={{ borderLeft: `4px solid ${result.escalated ? "var(--status-critical)" : "var(--status-good)"}` }}
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              className="flex flex-col gap-3"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-sm font-semibold">
-                {result.escalated ? `🏛️ ${t("escalated", lang)}` : `✓ ${t("self_treat", lang)}`}
-              </span>
-            </div>
-
-            <div className="card flex flex-col gap-2">
-              <div className="flex items-baseline justify-between">
-                <span className="text-lg font-bold">{result.disease}</span>
-                <span className="text-sm" style={{ color: SEV_COLOR[result.severity] }}>
-                  ● {result.severity} · {result.confidence}%
+              <div
+                className="card"
+                style={{ borderLeft: `4px solid ${result.escalated ? "var(--status-critical)" : "var(--status-good)"}` }}
+              >
+                <span className="inline-flex items-center gap-2 text-sm font-semibold">
+                  {result.escalated ? (
+                    <>
+                      <Landmark size={16} style={{ color: "var(--status-critical)" }} /> {t("escalated", lang)}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} style={{ color: "var(--status-good)" }} /> {t("self_treat", lang)}
+                    </>
+                  )}
                 </span>
               </div>
-              <p className="whitespace-pre-wrap text-sm" style={{ color: "var(--text-secondary)" }}>
-                {result.treatment}
-              </p>
-              <div className="flex gap-2">
-                <button className="btn-ghost" onClick={() => speakAuto(`${result.disease}. ${result.treatment}`, lang, caps.tts)}>
-                  🔊 {t("speak", lang)}
-                </button>
-                {!result.ai_live && (
-                  <span className="self-center text-xs" style={{ color: "var(--text-muted)" }}>
-                    offline mode — add GEMINI_API_KEY for live vision diagnosis
+
+              <div className="card flex flex-col gap-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-lg font-bold">{result.disease}</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm" style={{ color: SEV_COLOR[result.severity] }}>
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: SEV_COLOR[result.severity] }} />
+                    {result.severity} · {result.confidence}%
                   </span>
-                )}
+                </div>
+                <p className="whitespace-pre-wrap text-sm" style={{ color: "var(--text-secondary)" }}>
+                  {result.treatment}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    className="btn-ghost inline-flex items-center gap-1.5"
+                    onClick={() => speakAuto(`${result.disease}. ${result.treatment}`, lang, caps.tts)}
+                  >
+                    <Volume2 size={15} /> {t("speak", lang)}
+                  </button>
+                  {!result.ai_live && (
+                    <span className="self-center text-xs" style={{ color: "var(--text-muted)" }}>
+                      offline mode — add GEMINI_API_KEY for live vision diagnosis
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
