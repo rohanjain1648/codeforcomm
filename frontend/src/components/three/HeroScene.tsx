@@ -29,7 +29,7 @@ function ParticleSphere({ theme }: { theme: "light" | "dark" }) {
   
   const sphere = useMemo(() => generateSpherePoints(3000, 1.8), []);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (ref.current) {
       ref.current.rotation.x -= delta / 10;
       ref.current.rotation.y -= delta / 15;

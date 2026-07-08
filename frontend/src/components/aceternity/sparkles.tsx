@@ -1,5 +1,5 @@
 "use client";
-import React, { useId, useEffect, useState } from "react";
+import { useId, useEffect, useState } from "react";
 import Particles from "@tsparticles/react";
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
@@ -32,7 +32,7 @@ export const SparklesCore = (props: {
       setInit(true);
     });
   }, []);
-  const particlesLoaded = async (container?: Container) => {
+  const particlesLoaded = async (_container?: Container) => {
     // optional initialization logic
   };
 
@@ -81,7 +81,6 @@ export const SparklesCore = (props: {
             },
           },
           particles: {
-            bounce: false,
             color: {
               value: particleColor || "#ffffff",
             },

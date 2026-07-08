@@ -45,17 +45,17 @@
 
 .dark {
   /* Minimalist dark palette */
-  --surface-0: #0f172a;
-  --surface-1: #1e293b;
-  --surface-2: #334155;
-  --surface-glass: rgba(15, 23, 42, 0.9);
+  --surface-0: #0a0a0a;
+  --surface-1: #121212;
+  --surface-2: #1a1a1a;
+  --surface-glass: rgba(10, 10, 10, 0.6);
   
-  --border: rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(255, 255, 255, 0.25);
+  --border: rgba(255, 255, 255, 0.05);
+  --border-hover: rgba(194, 242, 119, 0.3);
   
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
   
   --accent: #c2f277;
   --accent-2: #d9f99d;
@@ -88,9 +88,18 @@ html, body, #root {
 /* Global Utilities */
 .glass-panel {
   background: var(--surface-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .bg-grid {

@@ -5,7 +5,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
     f"{GEMINI_MODEL}:generateContent"
@@ -142,31 +142,85 @@ def analyze_dry_spell(forecast: dict) -> dict:
 # ── Gemini (Google AI Studio key; prod path: Vertex AI) ──────────────────────
 
 def gemini_ready() -> bool:
-    return bool(os.environ.get("GEMINI_API_KEY", "").strip())
+    return bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GROQ_API_KEY", "").strip())
 
 
-def gemini(prompt: str, image_b64: str | None = None, lang: str = "en") -> str | None:
-    """Call Gemini; returns None when no key / on error so callers can fall back."""
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+def groq_call(prompt: str, image_b64: str | None = None, lang: str = "en") -> str | None:
+    key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
         return None
-
-    parts: list[dict] = []
-    if image_b64:
-        parts.append({"inline_data": {"mime_type": "image/jpeg", "data": image_b64}})
+    
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json"
+    }
+    
     lang_note = f"\nRespond in {LANG_NAME.get(lang, 'English')}. Keep under 150 words, numbered steps."
-    parts.append({"text": prompt + lang_note})
-
+    full_prompt = prompt + lang_note
+    
+    if image_b64:
+        model = "llama-3.2-11b-vision-preview"
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": full_prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}}
+                ]
+            }
+        ]
+    else:
+        model = "llama-3.3-70b-versatile"
+        messages = [{"role": "user", "content": full_prompt}]
+        
     try:
         r = requests.post(
-            GEMINI_URL,
-            params={"key": key},
-            json={"contents": [{"parts": parts}],
-                  "generationConfig": {"maxOutputTokens": 500, "temperature": 0.4}},
+            url,
+            headers=headers,
+            json={
+                "model": model,
+                "messages": messages,
+                "temperature": 0.4,
+                "max_tokens": 500
+            },
             timeout=30,
         )
         data = r.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        if "error" in data:
+            logger.error(f"Groq API error: {data['error']}")
+            return None
+        return data["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        logger.error(f"Gemini call failed: {e}")
+        logger.error(f"Groq call failed: {e}")
         return None
+
+
+def gemini(prompt: str, image_b64: str | None = None, lang: str = "en") -> str | None:
+    """Call Gemini or Groq fallback; returns None when no key / on error so callers can fall back."""
+    # Try Gemini first
+    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if key:
+        parts: list[dict] = []
+        if image_b64:
+            parts.append({"inline_data": {"mime_type": "image/jpeg", "data": image_b64}})
+        lang_note = f"\nRespond in {LANG_NAME.get(lang, 'English')}. Keep under 150 words, numbered steps."
+        parts.append({"text": prompt + lang_note})
+
+        try:
+            r = requests.post(
+                GEMINI_URL,
+                params={"key": key},
+                json={"contents": [{"parts": parts}],
+                      "generationConfig": {"maxOutputTokens": 500, "temperature": 0.4}},
+                timeout=30,
+            )
+            data = r.json()
+            if "error" not in data and "candidates" in data:
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            logger.error(f"Gemini API error: {data.get('error')}")
+        except Exception as e:
+            logger.error(f"Gemini call failed: {e}")
+
+    # Fallback to Groq
+    return groq_call(prompt, image_b64, lang)

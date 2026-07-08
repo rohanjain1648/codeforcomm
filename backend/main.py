@@ -138,7 +138,7 @@ def recommend(req: RecommendReq):
     results.sort(key=lambda r: r["score"], reverse=True)
     top = results[0]
 
-    ai_reason = services.gemini(
+    gemini_reason = services.gemini(
         f"You are an agronomist. District {district['district']} ({district['zone']}), "
         f"{district['soil']} soil, {district['rain_mm']}mm annual rain, {gw} groundwater, "
         f"{req.irrigation} irrigation, {req.season} season, {req.acres} acres. "
@@ -146,7 +146,8 @@ def recommend(req: RecommendReq):
         f"Explain to the farmer in simple words why this beats habit crops like paddy, "
         f"and give 3 first steps.",
         lang=req.lang,
-    ) or (
+    )
+    ai_reason = gemini_reason or (
         f"{top['icon']} {top['label']} suits your {district['soil']} soil and "
         f"{district['rain_mm']}mm rainfall best (score {top['score']}/100). "
         f"{top['note']} Expected profit on {req.acres} acres: ₹{top['profit_total']:,}. "
@@ -159,7 +160,7 @@ def recommend(req: RecommendReq):
         "effective_water_mm": int(supply),
         "recommendations": results,
         "ai_advice": ai_reason,
-        "ai_live": services.gemini_ready(),
+        "ai_live": gemini_reason is not None,
         "satellite": satellite,
         "satellite_live": satellite is not None,
     }

@@ -16,7 +16,6 @@ import { useTheme } from "../components/ThemeProvider";
 import { HeroScene } from "../components/three/HeroScene";
 import { SpotlightCard } from "../components/ui/SpotlightCard";
 import { AnimatedText } from "../components/ui/AnimatedText";
-import { cn } from "../lib/utils";
 
 // Basic reveal animation wrapper
 function Reveal({

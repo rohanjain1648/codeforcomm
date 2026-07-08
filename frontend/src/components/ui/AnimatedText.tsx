@@ -25,7 +25,7 @@ export function AnimatedText({ text, className, delay = 0 }: AnimatedTextProps) 
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         damping: 24,
         stiffness: 200,
       },
