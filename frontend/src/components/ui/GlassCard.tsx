@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
-import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue, useSpring, type HTMLMotionProps } from "framer-motion";
 import { cn } from "../../lib/utils";
 
-interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface GlassCardProps extends HTMLMotionProps<"div"> {
   children: React.ReactNode;
   className?: string;
   glareColor?: string;

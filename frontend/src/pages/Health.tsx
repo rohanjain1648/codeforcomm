@@ -6,7 +6,7 @@ import { api, type HealthLog } from "../lib/api";
 import { useApp } from "../lib/store";
 import { t } from "../lib/i18n";
 import { speakAuto } from "../lib/voice";
-import { Spinner, VoiceButton } from "../components/ui";
+import { VoiceButton } from "../components/ui";
 import { GlassCard } from "../components/ui/GlassCard";
 import { HoverBorderGradient } from "../components/aceternity/hover-border-gradient";
 
