@@ -1,4 +1,4 @@
-import { useRef, useState, MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { motion, useMotionTemplate, useSpring } from "framer-motion";
 import { cn } from "../../lib/utils";
 
@@ -15,7 +15,6 @@ export function SpotlightCard({
 }: SpotlightCardProps) {
   const mouseX = useSpring(0, { stiffness: 500, damping: 100 });
   const mouseY = useSpring(0, { stiffness: 500, damping: 100 });
-  const [isHovered, setIsHovered] = useState(false);
 
   function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
     const { left, top } = currentTarget.getBoundingClientRect();
@@ -30,8 +29,6 @@ export function SpotlightCard({
         className
       )}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <motion.div
         className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-300 group-hover:opacity-100"

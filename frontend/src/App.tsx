@@ -12,6 +12,10 @@ import Health from "./pages/Health";
 import Rsk from "./pages/RSK";
 import Sms from "./pages/Sms";
 import Landing from "./pages/Landing";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Contact from "./pages/Contact";
 
 const TABS = [
   { id: "dashboard", labelKey: "nav_dashboard", icon: Wheat },
@@ -35,11 +39,11 @@ const PAGES: Record<TabId, ComponentType> = {
 
 export default function App() {
   const [tab, setTab] = useState<TabId>("dashboard");
-  const [showApp, setShowApp] = useState(window.location.hash === "#app");
+  const [hash, setHash] = useState(window.location.hash);
   const { lang, setLang, caps, setCaps } = useApp();
 
   useEffect(() => {
-    const handleHashChange = () => setShowApp(window.location.hash === "#app");
+    const handleHashChange = () => setHash(window.location.hash);
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
@@ -48,7 +52,14 @@ export default function App() {
     api.status().then(setCaps).catch(() => {});
   }, [setCaps]);
 
-  if (!showApp) {
+  // Static pages routing
+  if (hash === "#about") return <About />;
+  if (hash === "#privacy") return <Privacy />;
+  if (hash === "#terms") return <Terms />;
+  if (hash === "#contact") return <Contact />;
+
+  // Landing page routing
+  if (hash !== "#app") {
     return <Landing />;
   }
 

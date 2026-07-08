@@ -2,6 +2,7 @@ import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
 import * as THREE from "three";
+import { useTheme } from "../ThemeProvider";
 
 // Generates points on the surface of a sphere
 function generateSpherePoints(count: number, radius: number) {
@@ -23,7 +24,7 @@ function generateSpherePoints(count: number, radius: number) {
   return points;
 }
 
-function ParticleSphere() {
+function ParticleSphere({ theme }: { theme: "light" | "dark" }) {
   const ref = useRef<THREE.Points>(null);
   
   const sphere = useMemo(() => generateSpherePoints(3000, 1.8), []);
@@ -44,7 +45,7 @@ function ParticleSphere() {
           size={0.012}
           sizeAttenuation={true}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={theme === "dark" ? THREE.AdditiveBlending : THREE.NormalBlending}
         />
       </Points>
     </group>
@@ -52,11 +53,14 @@ function ParticleSphere() {
 }
 
 export function HeroScene() {
+  const { resolvedTheme } = useTheme();
+  const fogColor = resolvedTheme === "dark" ? "#000000" : "#ffffff";
+
   return (
     <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
       <Canvas camera={{ position: [0, 0, 4.5] }}>
-        <fog attach="fog" args={["#000", 2.5, 6]} />
-        <ParticleSphere />
+        <fog attach="fog" args={[fogColor, 2.5, 6]} />
+        <ParticleSphere theme={resolvedTheme} />
       </Canvas>
     </div>
   );

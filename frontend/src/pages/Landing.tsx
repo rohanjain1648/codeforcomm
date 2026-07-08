@@ -1,16 +1,18 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import type { ReactNode } from "react";
+import { Footer } from "../components/ui/Footer";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Wheat,
-  Compass,
-  Bell,
-  Microscope,
   Sparkles,
   Satellite,
   AudioLines,
   MessageCircle,
+  Sun,
+  Moon,
+  CloudLightning,
 } from "lucide-react";
 
+import { useTheme } from "../components/ThemeProvider";
 import { HeroScene } from "../components/three/HeroScene";
 import { SpotlightCard } from "../components/ui/SpotlightCard";
 import { AnimatedText } from "../components/ui/AnimatedText";
@@ -39,24 +41,48 @@ function Reveal({
   );
 }
 
-const FEATURES = [
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  
+  return (
+    <button
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      className="p-2 rounded-full hover:bg-[var(--surface-2)] transition-colors"
+      aria-label="Toggle theme"
+    >
+      {resolvedTheme === "dark" ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} className="text-gray-600" />}
+    </button>
+  );
+}
+
+const BENTO_FEATURES = [
   {
-    Icon: Compass,
-    title: "Intelligence, Not Instinct",
-    desc: "12 crops scored in real-time against granular soil, water, and economic datasets. Eliminate guesswork.",
-    colSpan: "md:col-span-2",
+    Icon: Satellite,
+    title: "Live Earth Engine Telemetry",
+    desc: "Ingest multi-spectral satellite imagery in real-time. Automatically track NDVI, soil moisture, and evapotranspiration to trigger precision irrigation workflows before a drought hits.",
+    image: "/images/earth_engine.png",
+    className: "md:col-span-2 md:row-span-2",
   },
   {
-    Icon: Bell,
-    title: "Predictive Alerts",
-    desc: "Hyper-local 16-day forecasts. Automatic dry-spell mitigation.",
-    colSpan: "md:col-span-1",
+    Icon: Sparkles,
+    title: "Gemini Vision Diagnostics",
+    desc: "Snap a photo of a diseased leaf. Our multimodal models instantly identify the pathogen and recommend verified treatments.",
+    image: "/images/gemini_vision.png",
+    className: "md:col-span-1",
   },
   {
-    Icon: Microscope,
-    title: "Vision AI Diagnostics",
-    desc: "Capture a photo. Our vision models diagnose disease and recommend verified treatments instantly.",
-    colSpan: "md:col-span-3",
+    Icon: CloudLightning,
+    title: "Predictive Weather",
+    desc: "16-day granular forecasts tied to your coordinates. Automate dry spell mitigation.",
+    image: "/images/weather_forecast.png",
+    className: "md:col-span-1",
+  },
+  {
+    Icon: AudioLines,
+    title: "Voice-First Multilingual Advisory",
+    desc: "Dial in from any basic phone. Our Cloud TTS and Dialogflow integration delivers real-time advisory in native dialects.",
+    image: "/images/voice_advisory.png",
+    className: "md:col-span-3",
   },
 ];
 
@@ -73,119 +99,132 @@ export default function Landing() {
   const heroY = useTransform(scrollY, [0, 800], [0, 200]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--surface-0)] text-white overflow-hidden selection:bg-emerald-500/30">
+    <div className="flex flex-col min-h-screen bg-[var(--surface-0)] text-[var(--text-primary)] selection:bg-[var(--accent)] selection:text-[var(--accent-fg)] transition-colors duration-300">
       
-      {/* Sleek Header */}
-      <header className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
+      {/* Subtle Grid Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-grid opacity-60" />
+
+      {/* Floating Header */}
+      <div className="fixed top-0 w-full z-50 p-4 md:p-6 transition-colors duration-300 pointer-events-none">
+        <header className="mx-auto max-w-5xl px-6 h-16 flex items-center justify-between bg-[var(--surface-0)] border border-[var(--border)] rounded-full shadow-sm pointer-events-auto">
           <div className="flex items-center gap-3 font-semibold tracking-tight text-lg">
-            <Wheat size={20} className="text-[#10B981]" />
+            <Wheat size={20} className="text-[var(--text-primary)]" />
             <span>KisanAlert</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-            <a href="#platform" className="hover:text-white transition-colors">Platform</a>
-            <a href="#vision" className="hover:text-white transition-colors">Vision</a>
-            <a href="#integrations" className="hover:text-white transition-colors">Integrations</a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-[var(--text-secondary)]">
+            <a href="#platform" className="hover:text-[var(--text-primary)] transition-colors">Platform</a>
+            <a href="#integrations" className="hover:text-[var(--text-primary)] transition-colors">Integrations</a>
           </div>
-          <a
-            href="/#app"
-            className="text-sm font-medium bg-white text-black px-4 py-1.5 rounded-full hover:scale-105 transition-transform"
-          >
-            Launch App
-          </a>
-        </div>
-      </header>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <a
+              href="/#app"
+              className="text-sm font-semibold bg-[var(--accent)] text-[var(--accent-fg)] px-5 py-2 rounded-full border border-black/10 hover:brightness-95 transition-all shadow-sm"
+            >
+              Launch App
+            </a>
+          </div>
+        </header>
+      </div>
 
       {/* Hero Section */}
-      <section className="relative h-screen w-full flex items-center justify-center pt-16">
-        <HeroScene />
+      <section className="relative min-h-screen w-full flex items-center justify-center pt-20 pb-16 px-6">
+        <div className="absolute inset-0 z-0 mask-image-bottom">
+          <HeroScene />
+        </div>
         
         <motion.div 
-          className="relative z-10 mx-auto max-w-5xl px-6 text-center"
+          className="relative z-10 mx-auto max-w-4xl text-center"
           style={{ opacity: heroOpacity, y: heroY }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 mb-8 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs font-medium tracking-wide text-gray-300 uppercase">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Live satellite telemetry
-          </div>
-          
           <AnimatedText 
             text="Precision Agriculture, Solved." 
-            className="text-6xl md:text-8xl font-bold tracking-tighter justify-center mb-6" 
+            className="text-5xl md:text-8xl font-black tracking-tight justify-center mb-8 text-[var(--text-primary)]" 
           />
           
           <motion.p
-            className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-10 font-light tracking-wide"
+            className="text-xl md:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto mb-12 font-medium tracking-wide leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            High-fidelity data and predictive models for the modern farmer. 
-            Accessible everywhere.
+            We abstracted the complexity of satellite telemetry and multimodal AI into actionable, hyper-localized insights. Built for the modern farmer.
           </motion.p>
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center justify-center gap-6"
+            transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <a
               href="/#app"
-              className="bg-white text-black px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-200 transition-colors"
+              className="bg-[var(--accent)] text-[var(--accent-fg)] px-10 py-4 rounded-full font-bold text-lg border border-black/10 hover:-translate-y-1 hover:shadow-lg transition-all shadow-sm"
             >
-              Start Building
+              Start Building for Free
             </a>
             <a
               href="#platform"
-              className="px-8 py-4 text-lg font-medium text-gray-400 hover:text-white transition-colors"
+              className="px-10 py-4 text-lg font-semibold text-[var(--text-primary)] bg-[var(--surface-0)] border border-[var(--border)] rounded-full hover:bg-[var(--surface-1)] transition-all shadow-sm"
             >
-              Explore Platform
+              Explore Features
             </a>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* Platform / Features */}
-      <section id="platform" className="relative py-32 px-6 z-20 bg-black">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        
-        <div className="mx-auto max-w-6xl">
-          <Reveal className="mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-              A Unified <span className="text-gray-500">Ecosystem</span>
+      {/* Platform / Features (Bento Box Grid) */}
+      <section id="platform" className="relative py-24 px-6 z-20 border-t border-[var(--border)] bg-[var(--surface-0)] transition-colors duration-300">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="mb-16 text-center md:text-left">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+              A Unified Ecosystem
             </h2>
-            <p className="text-lg text-gray-400 max-w-xl">
-              We abstracted the complexity of climate and satellite data into actionable, hyper-localized insights.
+            <p className="text-xl text-[var(--text-secondary)] max-w-2xl font-medium">
+              We leverage planetary-scale datasets and multimodal language models to deliver predictive intelligence instantly.
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {FEATURES.map((feature, i) => (
-              <SpotlightCard key={i} className={cn("p-8 flex flex-col min-h-[300px]", feature.colSpan)}>
-                <div className="p-3 bg-white/5 border border-white/10 rounded-lg w-fit mb-auto">
-                  <feature.Icon size={24} className="text-emerald-500" />
-                </div>
-                <div className="mt-12">
-                  <h3 className="text-2xl font-bold tracking-tight mb-3">{feature.title}</h3>
-                  <p className="text-gray-400 text-lg leading-relaxed">{feature.desc}</p>
-                </div>
-              </SpotlightCard>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {BENTO_FEATURES.map((feature, i) => (
+              <Reveal key={i} delay={i * 0.1} className={feature.className}>
+                <SpotlightCard className="p-8 md:p-10 flex flex-col h-full bg-[var(--surface-0)] border border-[var(--border)] rounded-[2rem] shadow-sm overflow-hidden group">
+                  <div className="flex flex-col mb-8 relative z-10">
+                    <div className="p-4 bg-[var(--surface-1)] border border-[var(--border)] rounded-2xl w-fit shadow-sm mb-6">
+                      <feature.Icon size={28} className="text-[var(--text-primary)]" />
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight mb-3 text-[var(--text-primary)]">
+                      {feature.title}
+                    </h3>
+                    <p className="text-[var(--text-secondary)] text-base leading-relaxed font-medium max-w-xl">
+                      {feature.desc}
+                    </p>
+                  </div>
+
+                  <div className="mt-auto relative rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--surface-1)] flex items-center justify-center">
+                    <img 
+                      src={feature.image} 
+                      alt={feature.title} 
+                      className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                    />
+                  </div>
+                </SpotlightCard>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* Integrations Marquee */}
-      <section id="integrations" className="py-24 border-y border-white/5 bg-[#050505] overflow-hidden">
+      <section id="integrations" className="py-24 border-t border-[var(--border)] bg-[var(--surface-1)] overflow-hidden transition-colors duration-300 relative z-20">
         <div className="mx-auto max-w-7xl px-6 flex flex-col items-center">
-          <p className="text-sm font-medium tracking-widest text-gray-500 uppercase mb-12">
+          <p className="text-sm font-bold tracking-widest text-[var(--text-muted)] uppercase mb-12">
             Powered by Enterprise Infrastructure
           </p>
-          <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+          <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
             {INTEGRATIONS.map((item) => (
-              <div key={item.title} className="flex items-center gap-3 text-xl font-bold tracking-tight">
-                <item.Icon className="text-emerald-500" />
+              <div key={item.title} className="flex items-center gap-3 text-xl font-bold tracking-tight text-[var(--text-primary)]">
+                <item.Icon className="text-[var(--text-primary)]" size={28} />
                 {item.title}
               </div>
             ))}
@@ -194,17 +233,9 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-black">
-        <div className="mx-auto max-w-6xl flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <div className="flex items-center gap-2 font-semibold text-white">
-            <Wheat size={16} className="text-emerald-500" />
-            KisanAlert
-          </div>
-          <p>
-            Designed for scale. Built for impact.
-          </p>
-        </div>
-      </footer>
+      <div className="relative z-20">
+        <Footer />
+      </div>
     </div>
   );
 }

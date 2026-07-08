@@ -16,22 +16,23 @@
 }
 
 :root {
-  /* Minimalist dark palette */
-  --surface-0: #000000;
-  --surface-1: #0a0a0a;
-  --surface-2: #141414;
-  --surface-glass: rgba(10, 10, 10, 0.6);
+  /* Minimalist light palette */
+  --surface-0: #ffffff;
+  --surface-1: #f8fafc;
+  --surface-2: #f1f5f9;
+  --surface-glass: rgba(255, 255, 255, 0.9);
   
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.2);
   
-  --text-primary: #ffffff;
-  --text-secondary: #888888;
-  --text-muted: #555555;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 
-  /* Accent: Electric Emerald */
-  --accent: #10B981;
-  --accent-2: #059669;
+  /* Accent: RamAIn Lime */
+  --accent: #c2f277;
+  --accent-2: #d9f99d;
+  --accent-fg: #000000;
 
   /* Radii */
   --radius-sm: 6px;
@@ -40,6 +41,25 @@
   --radius-xl: 32px;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  /* Minimalist dark palette */
+  --surface-0: #0f172a;
+  --surface-1: #1e293b;
+  --surface-2: #334155;
+  --surface-glass: rgba(15, 23, 42, 0.9);
+  
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.25);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --accent: #c2f277;
+  --accent-2: #d9f99d;
+  --accent-fg: #000000;
 }
 
 html, body, #root { 
@@ -52,8 +72,8 @@ html, body, #root {
 }
 
 ::selection {
-  background: rgba(16, 185, 129, 0.3);
-  color: var(--text-primary);
+  background: var(--accent);
+  color: var(--accent-fg);
 }
 
 /* Minimalist Scrollbar */
@@ -63,25 +83,30 @@ html, body, #root {
   background: var(--surface-2);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover { background: #333; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* Global Utilities */
 .glass-panel {
   background: var(--surface-glass);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
 }
 
+.bg-grid {
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 .text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .accent-gradient {
-  background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
